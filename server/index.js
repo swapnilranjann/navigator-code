@@ -26,7 +26,7 @@ app.use((req, res, next) => {
   console.log(`│ 📡 Method : ${req.method}`);
   console.log(`│ 🌐 URL    : ${req.url}`);
   console.log(`│ ⏰ Time   : ${new Date().toLocaleTimeString()}`);
-  if (Object.keys(req.body).length > 0) {
+  if (req.body && Object.keys(req.body).length > 0) {
     const bodyCopy = { ...req.body };
     if (bodyCopy.password) bodyCopy.password = '[MASKED]';
     console.log(`│ 📦 Body   :\n│   ${JSON.stringify(bodyCopy, null, 2).split('\n').join('\n│   ')}`);
