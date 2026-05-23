@@ -13,6 +13,9 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const apiFetch = async (endpoint) => {
   console.log(`[NETWORK] 📡 Requesting: ${BASE_URL}${endpoint}`);
   
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  
   try {
     const startTime = Date.now();
     const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -21,9 +24,10 @@ const apiFetch = async (endpoint) => {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      signal: AbortSignal.timeout(5000)
+      signal: controller.signal
     });
 
+    clearTimeout(timeoutId);
     const duration = Date.now() - startTime;
 
     if (!response.ok) {
@@ -35,7 +39,8 @@ const apiFetch = async (endpoint) => {
     console.log(`[NETWORK] ✅ ${endpoint} success (${duration}ms). Payload:`, Array.isArray(data) ? `${data.length} items` : 'Object');
     return data;
   } catch (error) {
-    if (error.name === 'TimeoutError') {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
       console.error(`[NETWORK] ❌ ${endpoint} TIMEOUT. Is the server at ${BASE_URL} running?`);
     } else {
       console.error(`[NETWORK] ❌ ${endpoint} ERROR:`, error.message);

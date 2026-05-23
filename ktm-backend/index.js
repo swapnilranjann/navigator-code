@@ -63,7 +63,10 @@ app.use((req, res, next) => {
 // --- MONGODB CONNECTION ---
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/ktm_navigator';
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
+  .then(() => {
+    console.log('✅ Connected to MongoDB');
+    seedDatabase();
+  })
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // --- DATA MODELS ---
@@ -85,14 +88,75 @@ const User = mongoose.model('User', UserSchema);
 // Existing collections...
 const RideSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  date: String,
-  distance: Number,
-  duration: String,
-  from: String,
-  to: String,
+  date: { type: String, required: true },
+  distance: { type: Number, required: true },
+  duration: { type: String, required: true },
+  avgSpeed: { type: Number, default: 0 },
+  startTime: { type: String },
+  endTime: { type: String },
+  from: { type: String, required: true },
+  to: { type: String, required: true },
 }, { collection: 'ktm_rides' });
 
 const Ride = mongoose.model('Ride', RideSchema);
+
+// Database Seeder
+const seedDatabase = async () => {
+  try {
+    // Seed Users
+    const defaultUsers = [
+      { name: 'Aditya Patel', email: 'aditya@example.com', password: 'password123', totalDistance: 1045.2, bikeModel: 'KTM 390 Adventure' },
+      { name: 'Swapnil Ranjan', email: 'swapnil@example.com', password: 'password123', totalDistance: 890.5, bikeModel: 'KTM 250 Duke' },
+      { name: 'Rohan Sharma', email: 'rohan@example.com', password: 'password123', totalDistance: 754.1, bikeModel: 'KTM RC 390' },
+      { name: 'Vikram Singh', email: 'vikram@example.com', password: 'password123', totalDistance: 620.8, bikeModel: 'KTM 200 Duke' }
+    ];
+    for (const u of defaultUsers) {
+      const exists = await User.findOne({ email: u.email });
+      if (!exists) {
+        u.password = await bcrypt.hash(u.password, 10);
+        await new User(u).save();
+        console.log(`🌱 Seeded user for leaderboard: ${u.name}`);
+      }
+    }
+
+    // Seed Rides
+    const rideCount = await Ride.countDocuments();
+    if (rideCount === 0) {
+      console.log('🌱 Seeding default ride history...');
+      const testUser = await User.findOne({ email: 'swapnil@example.com' });
+      const userId = testUser ? testUser._id : null;
+      
+      const defaultRides = [
+        {
+          userId,
+          date: '15 May 2026',
+          distance: 42.5,
+          duration: '1h 15m',
+          avgSpeed: 34,
+          startTime: '08:00 AM',
+          endTime: '09:15 AM',
+          from: 'Home (Downtown)',
+          to: 'Office (Tech Park)'
+        },
+        {
+          userId,
+          date: '14 May 2026',
+          distance: 85.2,
+          duration: '2h 45m',
+          avgSpeed: 31,
+          startTime: '04:30 PM',
+          endTime: '07:15 PM',
+          from: 'Office (Tech Park)',
+          to: 'Highway Cafe'
+        }
+      ];
+      await Ride.insertMany(defaultRides);
+      console.log('✅ Ride seeding completed.');
+    }
+  } catch (err) {
+    console.error('❌ Database Seeding Error:', err);
+  }
+};
 
 // --- AUTH ENDPOINTS ---
 
@@ -163,6 +227,47 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/rides', async (req, res) => {
   const rides = await Ride.find().sort({ _id: -1 });
   res.json(rides);
+});
+
+// Bike details endpoint
+app.get('/api/bike', async (req, res) => {
+  try {
+    const latestUser = await User.findOne().sort({ createdAt: -1 });
+    if (!latestUser) {
+      return res.json({
+        name: 'dukie',
+        model: 'KTM 250 Duke • 2025',
+        status: 'Disconnected',
+        lastActive: 'Never'
+      });
+    }
+    res.json({
+      name: latestUser.name + "'s Duke",
+      model: latestUser.bikeModel || 'KTM 250 Duke • 2025',
+      status: 'Connected via BLE',
+      lastActive: 'Just now'
+    });
+  } catch (err) {
+    console.error('[API] Bike error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Leaderboard rankings endpoint
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const users = await User.find().sort({ totalDistance: -1 });
+    const leaderboard = users.map((user, index) => ({
+      rank: index + 1,
+      name: user.name,
+      model: user.bikeModel || 'KTM 250 Duke',
+      distance: user.totalDistance || 0
+    }));
+    res.json(leaderboard);
+  } catch (err) {
+    console.error('[API] Leaderboard error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(PORT, '0.0.0.0', () => {

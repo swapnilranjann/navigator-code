@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing } from '../theme/colors';
 import BikeCard from '../components/BikeCard';
@@ -7,7 +7,7 @@ import LoadingScreen from '../components/LoadingScreen';
 import { Bell, Settings, Navigation2, ChevronDown } from 'lucide-react-native';
 import { fetchBikeDetails } from '../utils/Api';
 
-const GarageScreen = () => {
+const GarageScreen = ({ navigation }) => {
   const [bike, setBike] = React.useState({
     name: 'dukie',
     model: 'KTM 250 Duke • 2025',
@@ -16,13 +16,19 @@ const GarageScreen = () => {
   });
 
   const [loading, setLoading] = React.useState(true);
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   React.useEffect(() => {
     const loadData = async () => {
-      setLoading(true);
-      const data = await fetchBikeDetails();
-      if (data) setBike(data);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const data = await fetchBikeDetails();
+        if (data) setBike(data);
+      } catch (err) {
+        console.error('[GARAGE] Error loading bike details:', err);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
   }, []);
@@ -40,14 +46,14 @@ const GarageScreen = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Promotion/What's New Card */}
-        <TouchableOpacity style={styles.promoCard} activeOpacity={0.9}>
+        <TouchableOpacity style={styles.promoCard} activeOpacity={0.9} onPress={() => setModalVisible(true)}>
           <View style={styles.promoIconContainer}>
             <Text style={styles.newTag}>NEW</Text>
           </View>
           <View style={styles.promoTextContainer}>
             <Text style={styles.promoTitle}>What's New</Text>
             <Text style={styles.promoSubtitle}>New onboarding, re-pair bike, and more</Text>
-            <TouchableOpacity style={styles.seeChanges}>
+            <TouchableOpacity style={styles.seeChanges} onPress={() => setModalVisible(true)}>
                <Text style={styles.seeChangesText}>See Changes</Text>
             </TouchableOpacity>
           </View>
@@ -78,15 +84,76 @@ const GarageScreen = () => {
 
       {/* Footer Navigation Placeholder (Simulated) */}
       <View style={styles.bottomNav}>
-         <View style={styles.navItem}>
+         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Garage')}>
             <Navigation2 size={24} color={Colors.primary} />
             <Text style={[styles.navLabel, {color: Colors.primary}]}>Garage</Text>
-         </View>
-         <View style={styles.navItem}>
+         </TouchableOpacity>
+         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('My Rides')}>
             <Settings size={24} color={Colors.textSecondary} />
             <Text style={styles.navLabel}>My Rides</Text>
-         </View>
+         </TouchableOpacity>
       </View>
+
+      {/* What's New Release Notes Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>KTM Companion v1.0.0</Text>
+            <Text style={styles.modalSubtitle}>Ready to Race Launch Features 🚀</Text>
+            
+            <ScrollView style={styles.featuresList} showsVerticalScrollIndicator={false}>
+              <View style={styles.featureItem}>
+                <Text style={styles.featureBullet}>🔥</Text>
+                <View style={styles.featureTextWrapper}>
+                  <Text style={styles.featureName}>Restructured Layout</Text>
+                  <Text style={styles.featureDesc}>Clean, independent frontend & backend workspaces.</Text>
+                </View>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <Text style={styles.featureBullet}>🛡️</Text>
+                <View style={styles.featureTextWrapper}>
+                  <Text style={styles.featureName}>Secure Authentication</Text>
+                  <Text style={styles.featureDesc}>JWT authorization with password encryption and quick registration.</Text>
+                </View>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <Text style={styles.featureBullet}>📊</Text>
+                <View style={styles.featureTextWrapper}>
+                  <Text style={styles.featureName}>Console Observers</Text>
+                  <Text style={styles.featureDesc}>Visually styled request & response boxes for local terminal debugging.</Text>
+                </View>
+              </View>
+
+              <View style={styles.featureItem}>
+                <Text style={styles.featureBullet}>🌐</Text>
+                <View style={styles.featureTextWrapper}>
+                  <Text style={styles.featureName}>Robust Network Engine</Text>
+                  <Text style={styles.featureDesc}>Hermes-compatible AbortController request timeout logic.</Text>
+                </View>
+              </View>
+
+              <View style={styles.featureItem}>
+                <Text style={styles.featureBullet}>🏍️</Text>
+                <View style={styles.featureTextWrapper}>
+                  <Text style={styles.featureName}>TFT Navigation Link</Text>
+                  <Text style={styles.featureDesc}>BLE Bluetooth packet utilities to pair Duke 250 display.</Text>
+                </View>
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeButtonText}>READY TO RACE</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -195,6 +262,79 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontSize: 16,
     fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: Colors.card,
+    borderRadius: 28,
+    width: '100%',
+    maxHeight: '80%',
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    color: Colors.text,
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    color: Colors.primary,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 4,
+    marginBottom: Spacing.md,
+    textAlign: 'center',
+  },
+  featuresList: {
+    width: '100%',
+    marginVertical: Spacing.md,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.md,
+    width: '100%',
+  },
+  featureBullet: {
+    fontSize: 20,
+    marginRight: Spacing.sm,
+    marginTop: 2,
+  },
+  featureTextWrapper: {
+    flex: 1,
+  },
+  featureName: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  featureDesc: {
+    color: Colors.textSecondary,
+    fontSize: 14,
+    marginTop: 2,
+  },
+  closeButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    width: '100%',
+    borderRadius: 15,
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  closeButtonText: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: 'bold',
+    letterSpacing: 2,
   },
 });
 

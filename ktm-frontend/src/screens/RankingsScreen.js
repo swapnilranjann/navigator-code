@@ -12,10 +12,15 @@ const RankingsScreen = () => {
 
   React.useEffect(() => {
     const loadData = async () => {
-      setLoading(true);
-      const data = await fetchLeaderboard();
-      if (data) setRiders(data);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const data = await fetchLeaderboard();
+        if (data) setRiders(data);
+      } catch (err) {
+        console.error('[RANKINGS] Error loading leaderboard:', err);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
   }, []);
@@ -54,7 +59,7 @@ const RankingsScreen = () => {
                 rider.rank === 3 ? <Trophy size={20} color="#CD7F32" /> :
                 <Text style={styles.rankText}>#{rider.rank}</Text>}
             </View>
-            <div style={styles.avatarPlaceholder} />
+            <View style={styles.avatarPlaceholder} />
             <View style={styles.riderInfo}>
                <Text style={styles.riderName}>{rider.name}</Text>
                <Text style={styles.riderModel}>{rider.model}</Text>

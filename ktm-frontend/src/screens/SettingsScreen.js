@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing } from '../theme/colors';
-import { User, Sun, Navigation, Bell, BarChart3, HelpCircle, Crown, ChevronRight } from 'lucide-react-native';
+import { User, Sun, Navigation, Bell, BarChart3, HelpCircle, Crown, ChevronRight, LogOut } from 'lucide-react-native';
+import { AuthContext } from '../context/AuthContext';
 
-const SettingItem = ({ icon: Icon, label, hasArrow = true }) => (
-  <TouchableOpacity style={styles.settingItem} activeOpacity={0.7}>
+const SettingItem = ({ icon: Icon, label, hasArrow = true, onPress }) => (
+  <TouchableOpacity style={styles.settingItem} activeOpacity={0.7} onPress={onPress}>
     <View style={styles.settingLeft}>
        <Icon size={22} color={Colors.text} />
        <Text style={styles.settingLabel}>{label}</Text>
@@ -15,6 +16,8 @@ const SettingItem = ({ icon: Icon, label, hasArrow = true }) => (
 );
 
 const SettingsScreen = () => {
+  const { logout } = useContext(AuthContext);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -37,8 +40,10 @@ const SettingsScreen = () => {
            <ChevronRight size={20} color={Colors.primary} />
         </TouchableOpacity>
 
+        <SettingItem icon={LogOut} label="Log out" hasArrow={false} onPress={logout} />
+
         <View style={styles.versionContainer}>
-           <Text style={styles.versionText}>Version: 55.0 (55)</Text>
+           <Text style={styles.versionText}>Version: 1.0.0 (Launch)</Text>
            <View style={styles.legalLinks}>
               <Text style={styles.legalText}>Privacy Policy</Text>
               <View style={styles.dot} />

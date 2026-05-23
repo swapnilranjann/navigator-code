@@ -74,12 +74,12 @@ const RegisterScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.form}>
-          <InputGroup icon={User} placeholder="Full Name" value={formData.name} onChange={(v) => updateField('name', v)} />
-          <InputGroup icon={Mail} placeholder="Email Address" value={formData.email} onChange={(v) => updateField('email', v)} keyboardType="email-address" />
-          <InputGroup icon={Lock} placeholder="Password" value={formData.password} onChange={(v) => updateField('password', v)} secureTextEntry />
-          <InputGroup icon={Phone} placeholder="Mobile Number" value={formData.mobile} onChange={(v) => updateField('mobile', v)} keyboardType="phone-pad" />
-          <InputGroup icon={Bike} placeholder="Bike Model (e.g. Duke 250)" value={formData.bikeModel} onChange={(v) => updateField('bikeModel', v)} />
-          <InputGroup icon={CreditCard} placeholder="Registration Number" value={formData.regNumber} onChange={(v) => updateField('regNumber', v)} autoCapitalize="characters" />
+          <InputGroup icon={User} placeholder="Full Name" value={formData.name} onChangeText={(v) => updateField('name', v)} />
+          <InputGroup icon={Mail} placeholder="Email Address" value={formData.email} onChangeText={(v) => updateField('email', v)} keyboardType="email-address" />
+          <InputGroup icon={Lock} placeholder="Password" value={formData.password} onChangeText={(v) => updateField('password', v)} secureTextEntry />
+          <InputGroup icon={Phone} placeholder="Mobile Number" value={formData.mobile} onChangeText={(v) => updateField('mobile', v)} keyboardType="phone-pad" />
+          <InputGroup icon={Bike} placeholder="Bike Model (e.g. Duke 250)" value={formData.bikeModel} onChangeText={(v) => updateField('bikeModel', v)} />
+          <InputGroup icon={CreditCard} placeholder="Registration Number" value={formData.regNumber} onChangeText={(v) => updateField('regNumber', v)} autoCapitalize="characters" />
 
           <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
              <Text style={styles.registerButtonText}>CREATE ACCOUNT</Text>

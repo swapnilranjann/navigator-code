@@ -10,18 +10,24 @@ import LoadingScreen from '../components/LoadingScreen';
 const RidesScreen = () => {
   const [rides, setRides] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [activeDate, setActiveDate] = React.useState(15);
   const days = [
     { day: 'Mon', date: 18 }, { day: 'Sun', date: 17 }, { day: 'Sat', date: 16 },
-    { day: 'Fri', date: 15, active: true }, { day: 'Thu', date: 14 },
+    { day: 'Fri', date: 15 }, { day: 'Thu', date: 14 },
     { day: 'Wed', date: 13 }, { day: 'Tue', date: 12 },
   ];
 
   React.useEffect(() => {
     const loadData = async () => {
-      setLoading(true);
-      const data = await fetchRides();
-      setRides(data);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const data = await fetchRides();
+        if (data) setRides(data);
+      } catch (err) {
+        console.error('[RIDES] Error loading rides:', err);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
   }, []);
@@ -69,12 +75,20 @@ const RidesScreen = () => {
 
         {/* Calendar Bar */}
         <View style={styles.calendar}>
-           {days.map((item, idx) => (
-             <View key={idx} style={styles.calendarDay}>
-                <Text style={[styles.calDayText, item.active && styles.calActiveDayText]}>{item.day}</Text>
-                <Text style={[styles.calDateText, item.active && styles.calActiveDateText]}>{item.date}</Text>
-             </View>
-           ))}
+           {days.map((item, idx) => {
+             const isDayActive = item.date === activeDate;
+             return (
+               <TouchableOpacity 
+                 key={idx} 
+                 style={styles.calendarDay}
+                 onPress={() => setActiveDate(item.date)}
+                 activeOpacity={0.7}
+               >
+                  <Text style={[styles.calDayText, isDayActive && styles.calActiveDayText]}>{item.day}</Text>
+                  <Text style={[styles.calDateText, isDayActive && styles.calActiveDateText]}>{item.date}</Text>
+               </TouchableOpacity>
+             );
+           })}
         </View>
 
         {/* Ride Cards */}
