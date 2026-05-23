@@ -82,17 +82,7 @@ const GarageScreen = ({ navigation }) => {
 
       </ScrollView>
 
-      {/* Footer Navigation Placeholder (Simulated) */}
-      <View style={styles.bottomNav}>
-         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Garage')}>
-            <Navigation2 size={24} color={Colors.primary} />
-            <Text style={[styles.navLabel, {color: Colors.primary}]}>Garage</Text>
-         </TouchableOpacity>
-         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('My Rides')}>
-            <Settings size={24} color={Colors.textSecondary} />
-            <Text style={styles.navLabel}>My Rides</Text>
-         </TouchableOpacity>
-      </View>
+
 
       {/* What's New Release Notes Modal */}
       <Modal
