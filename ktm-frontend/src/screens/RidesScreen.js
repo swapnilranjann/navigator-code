@@ -1,16 +1,26 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing } from '../theme/colors';
-import { ChevronLeft, MoreVertical, MapPin, Navigation } from 'lucide-react-native';
+import { ThemeContext } from '../context/ThemeContext';
+import { ChevronLeft, MoreVertical, MapPin, Navigation, Calendar } from 'lucide-react-native';
 
 import { fetchRides } from '../utils/Api';
 import LoadingScreen from '../components/LoadingScreen';
 
-const RidesScreen = () => {
+const RidesScreen = ({ navigation }) => {
+  const { colors } = React.useContext(ThemeContext);
+  const styles = getStyles(colors);
+
   const [rides, setRides] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [activeDate, setActiveDate] = React.useState(15);
+  const [activeTab, setActiveTab] = React.useState('details');
+
+  const filteredRides = rides.filter(ride => {
+    return ride.date && ride.date.includes(String(activeDate));
+  });
+
   const days = [
     { day: 'Mon', date: 18 }, { day: 'Sun', date: 17 }, { day: 'Sat', date: 16 },
     { day: 'Fri', date: 15 }, { day: 'Thu', date: 14 },
@@ -38,36 +48,48 @@ const RidesScreen = () => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
            <ChevronLeft size={28} color={Colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>Ride history</Text>
           <Text style={styles.headerSubtitle}>dukie</Text>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => Alert.alert('Options', 'Ride history options, reports, and backup are currently locked.')}>
            <MoreVertical size={24} color={Colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabs}>
-        <View style={styles.tabItem}>
-           <Text style={styles.activeTabText}>Details</Text>
-           <View style={styles.activeIndicator} />
-        </View>
-        <View style={styles.tabItem}>
-           <Text style={styles.inactiveTabText}>Summary</Text>
-        </View>
+        <TouchableOpacity 
+          style={styles.tabItem} 
+          onPress={() => setActiveTab('details')}
+          activeOpacity={0.7}
+        >
+           <Text style={activeTab === 'details' ? styles.activeTabText : styles.inactiveTabText}>Details</Text>
+           {activeTab === 'details' && <View style={styles.activeIndicator} />}
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.tabItem} 
+          onPress={() => setActiveTab('summary')}
+          activeOpacity={0.7}
+        >
+           <Text style={activeTab === 'summary' ? styles.activeTabText : styles.inactiveTabText}>Summary</Text>
+           {activeTab === 'summary' && <View style={styles.activeIndicator} />}
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Month Selector */}
         <View style={styles.monthHeader}>
-           <View style={styles.monthLabel}>
+           <TouchableOpacity 
+             style={styles.monthLabel}
+             onPress={() => Alert.alert('History Search', 'Filter rides by months is locked for this release.')}
+           >
               <ChevronLeft size={20} color={Colors.primary} />
               <Text style={styles.monthText}>May 2026</Text>
-           </View>
+           </TouchableOpacity>
            <View style={styles.rideCount}>
               <Text style={styles.rideCountText}>{rides.length} rides</Text>
            </View>
@@ -92,48 +114,55 @@ const RidesScreen = () => {
         </View>
 
         {/* Ride Cards */}
-        {rides.map((ride, idx) => (
-          <View key={idx} style={styles.rideCard}>
-            <Image source={require('../assets/ride_map.png')} style={styles.rideMap} />
-            <View style={styles.mapOverlay}>
-                <View style={styles.statChip}>
-                  <Navigation size={12} color={Colors.text} />
-                  <Text style={styles.statChipText}>{ride.distance} km</Text>
-                </View>
-                <View style={styles.statChip}>
-                  <Text style={styles.statChipText}>{ride.duration}</Text>
-                </View>
-                <View style={styles.statChip}>
-                  <Text style={styles.statChipText}>{ride.avgSpeed} km/h</Text>
-                </View>
-            </View>
+        {filteredRides.length > 0 ? (
+          filteredRides.map((ride, idx) => (
+            <View key={idx} style={styles.rideCard}>
+              <Image source={require('../assets/ride_map.png')} style={styles.rideMap} />
+              <View style={styles.mapOverlay}>
+                  <View style={styles.statChip}>
+                    <Navigation size={12} color={Colors.text} />
+                    <Text style={styles.statChipText}>{ride.distance} km</Text>
+                  </View>
+                  <View style={styles.statChip}>
+                    <Text style={styles.statChipText}>{ride.duration}</Text>
+                  </View>
+                  <View style={styles.statChip}>
+                    <Text style={styles.statChipText}>{ride.avgSpeed} km/h</Text>
+                  </View>
+              </View>
 
-            <View style={styles.rideDetails}>
-                <Text style={styles.rideTitle}>{ride.date} • {ride.startTime} - {ride.endTime}</Text>
-                
-                <View style={styles.locationRow}>
-                  <MapPin size={14} color={Colors.primary} />
-                  <Text style={styles.locationText} numberOfLines={1}>
-                      From: {ride.from}
-                  </Text>
-                </View>
-                
-                <View style={styles.locationRow}>
-                  <MapPin size={14} color={Colors.textSecondary} />
-                  <Text style={styles.locationText} numberOfLines={1}>
-                      To: {ride.to}
-                  </Text>
-                </View>
+              <View style={styles.rideDetails}>
+                  <Text style={styles.rideTitle}>{ride.date} • {ride.startTime} - {ride.endTime}</Text>
+                  
+                  <View style={styles.locationRow}>
+                    <MapPin size={14} color={Colors.primary} />
+                    <Text style={styles.locationText} numberOfLines={1}>
+                        From: {ride.from}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.locationRow}>
+                    <MapPin size={14} color={Colors.textSecondary} />
+                    <Text style={styles.locationText} numberOfLines={1}>
+                        To: {ride.to}
+                    </Text>
+                  </View>
+              </View>
             </View>
+          ))
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Calendar size={40} color={Colors.textSecondary} style={{ marginBottom: 8 }} />
+            <Text style={styles.emptyText}>No rides recorded on May {activeDate}, 2026</Text>
           </View>
-        ))}
+        )}
 
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
@@ -295,7 +324,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: Spacing.xs,
     flex: 1,
-  }
+  },
+  emptyContainer: {
+    backgroundColor: Colors.card,
+    borderRadius: 24,
+    padding: Spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  emptyText: {
+    color: Colors.textSecondary,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
 });
 
 export default RidesScreen;

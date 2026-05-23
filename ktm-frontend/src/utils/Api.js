@@ -62,3 +62,33 @@ export const fetchLeaderboard = async () => {
 export const fetchBikeDetails = async () => {
   return await apiFetch('/bike');
 };
+
+export const changePassword = async (email, oldPassword, newPassword) => {
+  console.log(`[NETWORK] 📡 Requesting POST /change-password for ${email}`);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  
+  try {
+    const response = await fetch(`${BASE_URL}/change-password`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, oldPassword, newPassword }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Password update failed');
+    }
+    return { success: true, message: data.message };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('[NETWORK] ❌ Change Password error:', error.message);
+    return { success: false, error: error.message };
+  }
+};

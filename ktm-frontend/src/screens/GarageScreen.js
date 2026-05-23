@@ -1,13 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing } from '../theme/colors';
+import { ThemeContext } from '../context/ThemeContext';
 import BikeCard from '../components/BikeCard';
 import LoadingScreen from '../components/LoadingScreen';
 import { Bell, Settings, Navigation2, ChevronDown } from 'lucide-react-native';
 import { fetchBikeDetails } from '../utils/Api';
 
 const GarageScreen = ({ navigation }) => {
+  const { colors } = React.useContext(ThemeContext);
+  const styles = getStyles(colors);
+
   const [bike, setBike] = React.useState({
     name: 'dukie',
     model: 'KTM 250 Duke • 2025',
@@ -17,6 +21,22 @@ const GarageScreen = ({ navigation }) => {
 
   const [loading, setLoading] = React.useState(true);
   const [modalVisible, setModalVisible] = React.useState(false);
+
+  const handleBikePress = () => {
+    Alert.alert(
+      'KTM BLE Connection',
+      `Vehicle: ${bike.name}\nModel: ${bike.model}\nStatus: ${bike.status}\n\nDo you want to search and re-pair with this bike's TFT display?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Connect BLE', 
+          onPress: () => {
+            Alert.alert('BLE Pairing', 'Scanning for KTM Duke TFT Display... Make sure Bluetooth is enabled on your motorcycle.');
+          }
+        }
+      ]
+    );
+  };
 
   React.useEffect(() => {
     const loadData = async () => {
@@ -39,7 +59,10 @@ const GarageScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>My Bikes</Text>
-        <TouchableOpacity style={styles.helpButton}>
+        <TouchableOpacity 
+          style={styles.helpButton}
+          onPress={() => Alert.alert('KTM Companion Help', 'Pair your KTM Duke 250 with your mobile phone via BLE (Bluetooth Low Energy) to mirror turn-by-turn navigation arrows directly onto the motorcycle\'s TFT dash.')}
+        >
            <Text style={styles.helpText}>Help ?</Text>
         </TouchableOpacity>
       </View>
@@ -72,10 +95,15 @@ const GarageScreen = ({ navigation }) => {
           status={bike.status} 
           lastActive={bike.lastActive}
           imageUri={require('../assets/ktm_bike.png')}
+          onPress={handleBikePress}
         />
 
         {/* Navigation Notification Section */}
-        <TouchableOpacity style={styles.navNotification} activeOpacity={0.8}>
+        <TouchableOpacity 
+          style={styles.navNotification} 
+          activeOpacity={0.8}
+          onPress={() => Alert.alert('Navigation Alert', 'No active trip details detected. Start navigation to send turn-by-turn instructions to your KTM screen.')}
+        >
            <Text style={styles.navNotifText}>Detected Navigation Notification</Text>
            <ChevronDown size={20} color={Colors.text} />
         </TouchableOpacity>
@@ -148,7 +176,7 @@ const GarageScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

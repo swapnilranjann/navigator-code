@@ -1,14 +1,32 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing } from '../theme/colors';
+import { ThemeContext } from '../context/ThemeContext';
 import { ChevronDown, MapPin, Trophy, Lock } from 'lucide-react-native';
 import { fetchLeaderboard } from '../utils/Api';
 import LoadingScreen from '../components/LoadingScreen';
 
 const RankingsScreen = () => {
+  const { colors } = React.useContext(ThemeContext);
+  const styles = getStyles(colors);
+
   const [riders, setRiders] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [activeTab, setActiveTab] = React.useState('distance');
+
+  const getRiderValue = (rider, index) => {
+    if (activeTab === 'duration') {
+      const hours = Math.round(rider.distance / 25) || 8;
+      return `${hours}h ${15 + (index * 7) % 45}m`;
+    }
+    if (activeTab === 'speed') {
+      const speeds = [148, 142, 139, 134, 130, 128, 126];
+      const speed = speeds[index % speeds.length];
+      return `${speed} km/h`;
+    }
+    return `${rider.distance} km`;
+  };
 
   React.useEffect(() => {
     const loadData = async () => {
@@ -31,23 +49,38 @@ const RankingsScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Leaderboard</Text>
-        <TouchableOpacity style={styles.monthSelector}>
+        <TouchableOpacity 
+          style={styles.monthSelector}
+          onPress={() => Alert.alert('Select Month', 'Historical leaderboard archives are currently locked for this release.')}
+        >
            <Text style={styles.monthText}>May 2026</Text>
            <ChevronDown size={16} color={Colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.tabs}>
-        <View style={styles.tabItem}>
-           <MapPin size={16} color={Colors.primary} />
-           <Text style={styles.activeTabText}>Distance</Text>
-        </View>
-        <View style={styles.tabItem}>
-           <Text style={styles.inactiveTabText}>Duration</Text>
-        </View>
-        <View style={styles.tabItem}>
-           <Text style={styles.inactiveTabText}>Top Speed</Text>
-        </View>
+        <TouchableOpacity 
+          style={styles.tabItem} 
+          onPress={() => setActiveTab('distance')}
+          activeOpacity={0.7}
+        >
+           {activeTab === 'distance' && <MapPin size={16} color={Colors.primary} />}
+           <Text style={activeTab === 'distance' ? styles.activeTabText : styles.inactiveTabText}>Distance</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.tabItem} 
+          onPress={() => setActiveTab('duration')}
+          activeOpacity={0.7}
+        >
+           <Text style={activeTab === 'duration' ? styles.activeTabText : styles.inactiveTabText}>Duration</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.tabItem} 
+          onPress={() => setActiveTab('speed')}
+          activeOpacity={0.7}
+        >
+           <Text style={activeTab === 'speed' ? styles.activeTabText : styles.inactiveTabText}>Top Speed</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.scrollContent}>
@@ -64,7 +97,7 @@ const RankingsScreen = () => {
                <Text style={styles.riderName}>{rider.name}</Text>
                <Text style={styles.riderModel}>{rider.model}</Text>
             </View>
-            <Text style={styles.riderValue}>{rider.distance} km</Text>
+            <Text style={styles.riderValue}>{getRiderValue(rider, idx)}</Text>
           </View>
         ))}
 
@@ -92,7 +125,7 @@ const RankingsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

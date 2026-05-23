@@ -1,9 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
-import { Colors } from '../theme/colors';
+import { ThemeContext } from '../context/ThemeContext';
 import { Zap } from 'lucide-react-native';
 
 const LoadingScreen = ({ message = 'READY TO RACE' }) => {
+  const { colors } = React.useContext(ThemeContext);
+  const styles = getStyles(colors);
+
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -46,7 +49,7 @@ const LoadingScreen = ({ message = 'READY TO RACE' }) => {
     <View style={styles.container}>
       <Animated.View style={[styles.iconContainer, { transform: [{ scale: pulseAnim }] }]}>
          <Animated.View style={{ transform: [{ rotate: spin }] }}>
-            <Zap size={64} color={Colors.primary} fill={Colors.primary} />
+            <Zap size={64} color={colors.primary} fill={colors.primary} />
          </Animated.View>
       </Animated.View>
       <Text style={styles.message}>{message}</Text>
@@ -57,7 +60,7 @@ const LoadingScreen = ({ message = 'READY TO RACE' }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

@@ -1,11 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { Colors, Spacing } from '../theme/colors';
+import { ThemeContext } from '../context/ThemeContext';
+import { Spacing } from '../theme/colors';
 import { Zap, ChevronRight } from 'lucide-react-native';
 
-const BikeCard = ({ name, model, status, lastActive, imageUri }) => {
+const BikeCard = ({ name, model, status, lastActive, imageUri, onPress }) => {
+  const { colors } = React.useContext(ThemeContext);
+  const styles = getStyles(colors);
+
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.container} activeOpacity={0.8} onPress={onPress}>
       <View style={styles.imageContainer}>
         {imageUri ? (
           <Image 
@@ -14,7 +18,7 @@ const BikeCard = ({ name, model, status, lastActive, imageUri }) => {
           />
         ) : (
           <View style={[styles.image, styles.placeholder]}>
-             <Zap size={32} color={Colors.primary} />
+             <Zap size={32} color={colors.primary} />
           </View>
         )}
       </View>
@@ -32,12 +36,12 @@ const BikeCard = ({ name, model, status, lastActive, imageUri }) => {
         </View>
       </View>
 
-      <ChevronRight size={24} color={Colors.primary} style={styles.chevron} />
+      <ChevronRight size={24} color={colors.primary} style={styles.chevron} />
     </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (Colors) => StyleSheet.create({
   container: {
     backgroundColor: Colors.card,
     borderRadius: 20,

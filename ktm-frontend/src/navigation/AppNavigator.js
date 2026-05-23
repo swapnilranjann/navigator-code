@@ -2,8 +2,8 @@ import React, { useContext } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Bike, History, Trophy, Settings as SettingsIcon } from 'lucide-react-native';
-import { Colors } from '../theme/colors';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
 import LoadingScreen from '../components/LoadingScreen';
 
 // Screens
@@ -17,32 +17,36 @@ import RegisterScreen from '../screens/RegisterScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const MainTabs = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      headerShown: false,
-      tabBarStyle: {
-        backgroundColor: Colors.surface,
-        borderTopColor: Colors.border,
-        height: 70,
-        paddingBottom: 10,
-      },
-      tabBarActiveTintColor: Colors.primary,
-      tabBarInactiveTintColor: Colors.textSecondary,
-      tabBarIcon: ({ color, size }) => {
-        if (route.name === 'Garage') return <Bike color={color} size={size} />;
-        if (route.name === 'My Rides') return <History color={color} size={size} />;
-        if (route.name === 'Rankings') return <Trophy color={color} size={size} />;
-        if (route.name === 'Settings') return <SettingsIcon color={color} size={size} />;
-      },
-    })}
-  >
-    <Tab.Screen name="Garage" component={GarageScreen} />
-    <Tab.Screen name="My Rides" component={RidesScreen} />
-    <Tab.Screen name="Rankings" component={RankingsScreen} />
-    <Tab.Screen name="Settings" component={SettingsScreen} />
-  </Tab.Navigator>
-);
+const MainTabs = () => {
+  const { colors } = useContext(ThemeContext);
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          height: 70,
+          paddingBottom: 10,
+        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarIcon: ({ color, size }) => {
+          if (route.name === 'Garage') return <Bike color={color} size={size} />;
+          if (route.name === 'My Rides') return <History color={color} size={size} />;
+          if (route.name === 'Rankings') return <Trophy color={color} size={size} />;
+          if (route.name === 'Settings') return <SettingsIcon color={color} size={size} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Garage" component={GarageScreen} />
+      <Tab.Screen name="My Rides" component={RidesScreen} />
+      <Tab.Screen name="Rankings" component={RankingsScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
+    </Tab.Navigator>
+  );
+};
 
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>

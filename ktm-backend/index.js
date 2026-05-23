@@ -223,6 +223,41 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+/**
+ * @route POST /api/change-password
+ * @desc  Change rider profile password
+ */
+app.post('/api/change-password', async (req, res) => {
+  console.log(`[AUTH] Password change request for: ${req.body.email}`);
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+    
+    if (!email || !oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'Rider not found' });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Incorrect old password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    console.log(`[AUTH] ✅ Success: Password updated for ${user.name}`);
+    res.json({ message: 'Password changed successfully!' });
+  } catch (err) {
+    console.error('[AUTH] ❌ Password change error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Existing Ride fetching logic...
 app.get('/api/rides', async (req, res) => {
   const rides = await Ride.find().sort({ _id: -1 });
