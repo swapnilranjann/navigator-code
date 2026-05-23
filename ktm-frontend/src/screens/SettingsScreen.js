@@ -365,22 +365,21 @@ const SettingsScreen = ({ navigation }) => {
           <View style={styles.profileModalContent}>
             {/* KTM Accent Header */}
             <View style={styles.profileHeaderAccent}>
-              <View style={styles.avatarCircle}>
+              <Text style={styles.profileTitle}>Rider Profile</Text>
+              <Text style={styles.profileSub}>Ready to Race</Text>
+            </View>
+
+            <View style={styles.profileDetailsContent}>
+              <View style={styles.avatarContainer}>
                 <Text style={styles.avatarText}>
                   {user?.user?.name ? user.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'KT'}
                 </Text>
               </View>
-            </View>
 
-            <View style={styles.profileDetailsContent}>
               <Text style={styles.profileName}>{user?.user?.name || 'KTM Rider'}</Text>
-              <View style={styles.badgeContainer}>
-                <View style={styles.proBadge}>
-                  <Text style={styles.proBadgeText}>PRO RIDER</Text>
-                </View>
-                <View style={styles.readyBadge}>
-                  <Text style={styles.readyBadgeText}>READY TO RACE</Text>
-                </View>
+              
+              <View style={styles.readyBadge}>
+                <Text style={styles.readyBadgeText}>PRO RIDER</Text>
               </View>
 
               <View style={styles.divider} />
@@ -876,16 +875,21 @@ const getStyles = (Colors) => StyleSheet.create({
     height: 44,
     color: Colors.text,
   },
-  buttonRow: {
+  eyeButton: {
+    padding: 4,
+  },
+  modalButtons: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    width: '100%',
     marginTop: Spacing.md,
   },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: Spacing.md,
-    borderRadius: 8,
-    marginLeft: Spacing.sm,
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 6,
   },
   cancelButton: {
     backgroundColor: Colors.background,
@@ -901,7 +905,7 @@ const getStyles = (Colors) => StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   updateButtonText: {
-    color: '#FFFFFF',
+    color: Colors.primary === '#E6E6E6' ? '#000000' : '#FFFFFF',
     fontSize: 14,
     fontWeight: 'bold',
   },
